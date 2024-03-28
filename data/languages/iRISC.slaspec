@@ -197,19 +197,19 @@ define pcodeop UnkAlu;
     Z32 = (RDlosrc == 0);
 }
 
-:or_b0 RD, RSsrc, imm16         is op=0x06 & RD & RSsrc & imm16 {
+:set0 RD, RSsrc, imm16         is op=0x06 & RD & RSsrc & imm16 {
     RD = (RSsrc & 0x0000ffffffffffff) | (imm16 << 48);
 }
 
-:or_b1 RD, RSsrc, imm16         is op=0x07 & RD & RSsrc & imm16 {
+:set1 RD, RSsrc, imm16         is op=0x07 & RD & RSsrc & imm16 {
     RD = (RSsrc & 0xffff0000ffffffff) | (imm16 << 32);
 }
 
-:or_b2 RD, RSsrc, imm16         is op=0x08 & RD & RSsrc & imm16 {
+:set3 RD, RSsrc, imm16         is op=0x08 & RD & RSsrc & imm16 {
     RD = (RSsrc & 0xffffffffffff0000) | (imm16 << 0);
 }
 
-:or_b3 RD, RSsrc, imm16         is op=0x09 & RD & RSsrc & imm16 {
+:set2 RD, RSsrc, imm16         is op=0x09 & RD & RSsrc & imm16 {
     RD = (RSsrc & 0xffffffff0000ffff) | (imm16 << 16);
 }
 
