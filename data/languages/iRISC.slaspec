@@ -208,7 +208,7 @@ define pcodeop UnkAlu;
 }
 
 :cmpi.lt.0x08 RSlosrc, simm16     is op=0x05 & cmpop=0x08 & RSlosrc & simm16 {
-    resultflags(RSlosrc, simm16);
+    resultflags(simm16, RSlosrc);
 }
 
 :cmpi.lt.0x09 RSlosrc, simm16     is op=0x05 & cmpop=0x09 & RSlosrc & simm16 {
