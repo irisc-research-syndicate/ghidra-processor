@@ -1,0 +1,313 @@
+define endian=big;
+
+define alignment=4;
+
+define space ram type=ram_space size=4 default;
+define space register type=register_space size=4;
+
+define register offset=0x00000 size=8 [
+    zero r1 r2 r3 r4 r5 r6 r7
+    r8 r9 r10 r11 r12 r13 r14 r15
+    r16 r17 r18 r19 r20 r21 r22 r23
+    r24 r25 r26 r27 r28 r29 r30 r31
+];
+
+define register offset=0x00000 size=4 [
+    zeroh zerol r1h r1l r2h r2l r3h r3l r4h r4l r5h r5l r6h r6l r7h r7l 
+    r8h r8l r9h r9l r10h r10l r11h r11l r12h r12l r13h r13l r14h r14l r15h r15l 
+    r16h r16l r17h r17l r18h r18l r19h r19l r20h r20l r21h r21l r22h r22l r23h r23l 
+    r24h r24l r25h r25l r26h r26l r27h r27l r28h r28l r29h r29l r30h r30l r31h r31l 
+];
+
+define register offset=0x40000 size=4 [
+    csr0000 csr0001 csr0002 csr0003 csr0004 csr0005 csr0006 csr0007
+    csr0008 csr0009 csr000a csr000b csr000c csr000d csr000e csr000f
+];
+
+define register offset=0x402c0 size=4 [
+    csr00b0 csr00b1 csr00b2 csr00b3 csr00b4 csr00b5 csr00b6 csr00b7
+    csr00b8 csr00b9 csr00ba csr00bb retaddr csr00bd csr00be csr00bf
+];
+
+define register offset=0x4c7d0 size=4 [
+    csr31f4 csr31f5 csr31f6 csr31f7_jtag_enabled
+];
+
+define register offset=0x4cd80 size=4 [
+    csr3360 csr3361
+];
+
+define register offset=0x63a20 size=4 [
+    clkcntlo clkcnthi csr8e8a csr8e8b
+];
+
+define register offset=0x67460 size=4 [
+    csr9d18 csr9d19 csr9d1a csr9d1b
+];
+
+
+define register offset=0x80000 size=4 [
+    pc
+];
+
+define register offset=0x81000 size=1 [
+    Z C N V LT GE COND
+];
+
+define token instr(32)
+    op=(26, 31)
+    rs=(21, 25)
+    rshi=(21, 25)
+    rslo=(21, 25)
+    jmpop=(24, 25)
+    imm24=(0, 23)
+    simm24=(0, 23) signed
+    rd=(16, 20)
+    rdhi=(16, 20)
+    rdlo=(16, 20)
+    cmpop=(16, 20)
+    cmpshamt=(16, 20)
+    rt=(11, 15)
+    rthi=(11, 15)
+    rtlo=(11, 15)
+    shamt=(11, 15)
+    imm16=(0, 15)
+    simm16=(0, 15) signed
+    funct=(0, 8)
+    off9=(2, 10) signed
+    width=(0, 1)
+    off11=(0, 10) signed
+;
+
+attach variables [ rd rs rt ] [
+    zero r1 r2 r3 r4 r5 r6 r7
+    r8 r9 r10 r11 r12 r13 r14 r15
+    r16 r17 r18 r19 r20 r21 r22 r23
+    r24 r25 r26 r27 r28 r29 r30 r31
+];
+
+attach variables [ rdhi rshi rthi ] [
+    zeroh r1h r2h r3h r4h r5h r6h r7h
+    r8h r9h r10h r11h r12h r13h r14h r15h
+    r16h r17h r18h r19h r20h r21h r22h r23h
+    r24h r25h r26h r27h r28h r29h r30h r31h
+];
+
+attach variables [ rdlo rslo rtlo ] [
+    zerol r1l r2l r3l r4l r5l r6l r7l
+    r8l r9l r10l r11l r12l r13l r14l r15l
+    r16l r17l r18l r19l r20l r21l r22l r23l
+    r24l r25l r26l r27l r28l r29l r30l r31l
+];
+
+RD: rd is rd { export rd; }
+RDsrc: rd is rd { export rd; }
+RDsrc: rd is rd & rd=0 { export 0:8; }
+
+#RS: rs is rs { export rs; }
+RSsrc: rs is rs { export rs; }
+RSsrc: rs is rs & rs=0 { export 0:8; }
+
+#RT: rt is rt { export rt; }
+RTsrc: rt is rt { export rt; }
+RTsrc: rt is rt & rt=0 { export 0:8; }
+
+#RDhi: rdhi is rdhi { export rdhi; }
+#RDhisrc: rdhi is rdhi { export rdhi; }
+#RDhisrc: rdhi is rdhi & rdhi=0 { export 0:4; }
+
+#RShi: rshi is rshi { export rshi; }
+#RShisrc: rshi is rshi { export rshi; }
+#RShisrc: rshi is rshi & rshi=0 { export 0:4; }
+
+#RThi: rthi is rthi { export rthi; }
+#RThisrc: rthi is rthi { export rthi; }
+#RThisrc: rthi is rthi & rthi=0 { export 0:4; }
+
+RDlo: rdlo is rdlo { export rdlo; }
+RDlosrc: rdlo is rdlo { export rdlo; }
+RDlosrc: rdlo is rdlo & rdlo=0 { export 0:4; }
+
+RSlo: rslo is rslo { export rslo; }
+RSlosrc: rslo is rslo { export rslo; }
+RSlosrc: rslo is rslo & rslo=0 { export 0:4; }
+
+#RTlo: rtlo is rtlo { export rtlo; }
+RTlosrc: rtlo is rtlo { export rtlo; }
+RTlosrc: rtlo is rtlo & rtlo=0 { export 0:4; }
+
+REL16: reloc is simm16 [ reloc=inst_start + 4*simm16; ] { export *:8 reloc; }
+
+REL24: reloc is simm24 [ reloc=inst_start + 4*simm24; ] { export *:8 reloc; }
+
+OFF9: reloc is off9 & width=0 [ reloc=1*off9; ] { export *[const]:4 reloc; }
+OFF9: reloc is off9 & width=1 [ reloc=2*off9; ] { export *[const]:4 reloc; }
+OFF9: reloc is off9 & width=2 [ reloc=4*off9; ] { export *[const]:4 reloc; }
+OFF9: reloc is off9 & width=3 [ reloc=8*off9; ] { export *[const]:4 reloc; }
+
+OFF9_SHL2: reloc is off9 [ reloc=4*off9; ] { export *[const]:4 reloc; }
+
+OFF11: off11 is off11 { export *[const]:4 off11; }
+
+# MEM9: off9(RTlo+RSlo) is off9 & 
+
+CSRREG: reloc is imm16 [ reloc=0x40000 + 4*imm16; ] { export *[register]:4 reloc; }
+
+# CC: "le" is cmpop=0x04
+
+define pcodeop unkOp;
+define pcodeop UnkCmp;
+define pcodeop UnkAlu;
+
+:unk.^op RD, RSsrc, RTsrc, imm16 is op & RD & RSsrc & RTsrc & imm16 { RD = unkOp(op:1, RSsrc, RTsrc); }
+
+:addi RD, RSsrc, simm16         is op=0x00 & RD & RSsrc & simm16 {
+    RD = RSsrc + simm16;
+}
+
+:addi.hi RD, RSsrc, simm16      is op=0x02 & RD & RDsrc & RSsrc & simm16 {
+    RD = RSsrc + (simm16 << 16);
+}
+
+:cmp cmpop, RSsrc, simm16       is op=0x05 & cmpop & RSsrc & simm16 { COND = UnkCmp(cmpop:1, RSsrc:4, simm16:4); }
+
+:cmp.le.04 RSlosrc, simm16         is op=0x05 & cmpop=0x04 & RSlosrc & simm16 {
+    COND = (RSlosrc <= simm16);
+}
+
+:cmp.eq.05 RSlosrc, simm16         is op=0x05 & cmpop=0x05 & RSlosrc & simm16 {
+    COND = (RSlosrc == simm16);
+}
+
+#:cmp.ge RSlosrc, simm16         is op=0x05 & cmpop=0x06 & RSlosrc & simm16 {
+#    COND = (RSlosrc >= simm16);
+#}
+
+:cmp.lt.06 RSlosrc, imm16        is op=0x05 & cmpop=0x06 & RSlosrc & imm16 {
+    COND = (RSlosrc < imm16);
+}
+
+:cmp.gt.07 RSlosrc, imm16        is op=0x05 & cmpop=0x07 & RSlosrc & imm16 {
+    COND = (RSlosrc > imm16);
+}
+
+:cmp.lt.09 RSlosrc, simm16       is op=0x05 & cmpop=0x09 & RSlosrc & simm16 {
+    COND = (RSlosrc < simm16);
+}
+
+:cmp.ge.17 RSlosrc, simm16        is op=0x05 & cmpop=0x17 & RSlosrc & simm16 {
+    COND = (RSlosrc >= simm16);
+}
+
+:or_b0 RD, RSsrc, imm16         is op=0x06 & RD & RSsrc & imm16 {
+    RD = (RSsrc & 0x0000ffffffffffff) | (imm16 << 48);
+}
+
+:or_b1 RD, RSsrc, imm16         is op=0x07 & RD & RSsrc & imm16 {
+    RD = (RSsrc & 0xffff0000ffffffff) | (imm16 << 32);
+}
+
+:or_b2 RD, RSsrc, imm16         is op=0x08 & RD & RSsrc & imm16 {
+    RD = (RSsrc & 0xffffffffffff0000) | (imm16 << 0);
+}
+
+:or_b3 RD, RSsrc, imm16         is op=0x09 & RD & RSsrc & imm16 {
+    RD = (RSsrc & 0xffffffff0000ffff) | (imm16 << 16);
+}
+
+:and.sx RD, RSsrc, simm16        is op=0x0a & RD & RSsrc & simm16 { RD = RSsrc & simm16; }
+:and.zx RD, RSsrc, imm16         is op=0x0b & RD & RSsrc & imm16 { RD = RSsrc & imm16; }
+
+:or  RD, RSsrc, imm16           is op=0x0c & RD & RSsrc & imm16 { RD = RSsrc | imm16; }
+
+:xor RD, RSsrc, imm16           is op=0x0e & RD & RSsrc & imm16 {
+    RD = RSsrc ^ imm16;
+}
+
+#:op10 RD, RSsrc, simm16 is simm16 & op=0x0a & RD & RSsrc unimpl
+#:op11 RD, RSsrc, simm16 is simm16 & op=0x0b & RD & RSsrc unimpl
+
+define pcodeop RDCSR;
+define pcodeop WRCSR;
+
+:csr.r RD, RSsrc, CSRREG        is op=0x12 & RD & RSsrc & CSRREG { RD = RDCSR(CSRREG:4); }
+
+:csr.w RD, RSsrc, CSRREG        is op=0x13 & RD & RSsrc & CSRREG { WRCSR(CSRREG:4, RSsrc:4); }
+
+:ld.17 RD, RSlosrc, RTlosrc, OFF9_SHL2 is op=0x17 & RD & RSlosrc & RTlosrc & OFF9_SHL2 {
+    RD = *[ram]:8 (RSlosrc + RTlosrc + (OFF9_SHL2 & 0xfffffff8));
+}
+
+:ld.18 RD, RSlosrc, RTlosrc, OFF11 is op=0x18 & RD & RSlosrc & RTlosrc & OFF11 {
+    RD = zext(*[ram]:1 (RSlosrc + RTlosrc + OFF11));
+}
+
+:ld.19 RD, RSlosrc, RTlosrc, OFF9, width is op=0x19 & RD & RSlosrc & RTlosrc & OFF9 & width {
+    RD = zext(*[ram]:4 (RSlosrc + RTlosrc + OFF9));
+}
+
+:st.1a RDlosrc, RSlosrc, RTlosrc, OFF9, width is op=0x1a & RDlosrc & RSlosrc & RTlosrc & OFF9 & width {
+    *[ram]:1 (RDlosrc + RSlosrc + OFF9) = RTlosrc:1;
+}
+
+:st.1b RDlosrc, RSlosrc, RTlosrc, OFF9, width is OFF9 & width & op=0x1b & RDlosrc & RSlosrc & RTlosrc {
+    *[ram]:4 (RDlosrc + RSlosrc + OFF9) = RTlosrc;
+}
+
+#:st.1c.b RD, RSsrc, RTsrc, OFF9 is OFF9 & width=0 & op=0x1c & RD & RSsrc & RTsrc {}
+#:st.1c.w RD, RSsrc, RTsrc, OFF9 is OFF9 & width=1 & op=0x1c & RD & RSsrc & RTsrc {}
+:enter RDlo, RSlosrc, RTlosrc, OFF9 is op=0x1c & width=2 & RDlo & RSlosrc & RTlosrc & RSlo & OFF9 & RD {
+    *[ram]:4 (RSlosrc + OFF9) = RTlosrc;
+    RDlo = RSlo;
+    RSlo = RSlosrc + OFF9;
+}
+
+:st.1c.q RD, RSsrc, RTsrc, OFF9 is op=0x1c & RD & RSsrc & RTsrc & OFF9 { }
+
+:st.1e.q RDlosrc, RSlosrc, RTsrc, OFF9_SHL2 is op=0x1e & RDlosrc & RSlosrc & RTsrc & OFF9_SHL2 {
+    *[ram]:8 (RDlosrc+RSlosrc+(OFF9_SHL2 & 0xfffffff8)) = RTsrc;
+}
+
+:jump.^jmpop REL24              is op=0x25 & jmpop & REL24 { goto REL24; }
+:call REL24                     is op=0x25 & jmpop=0x0 & REL24 { call REL24; }
+:jump REL24                     is op=0x25 & jmpop=0x1 & REL24 { goto REL24; }
+
+:b.t.^rs^rd RSsrc, RDsrc, REL16        is op=0x28 & rs & rd & RDsrc & RSsrc & REL16 { if(COND) goto REL16; }
+:b.f.^rs^rd RSsrc, RDsrc, REL16        is op=0x29 & rs & rd & RDsrc & RSsrc & REL16 { if(!COND) goto REL16; }
+
+:b.bset cmpshamt, RSsrc, REL16  is op=0x2a & cmpshamt & RSsrc & REL16 { if(((RSsrc >> cmpshamt) & 1) == 1) goto REL16; }
+:b.bclr cmpshamt, RSsrc, REL16  is op=0x2b & cmpshamt & RSsrc & REL16 { if(((RSsrc >> cmpshamt) & 1) == 0) goto REL16; }
+
+:alu.^funct RD, RSsrc, RTsrc    is op=0x3f & funct & RD & RSsrc & RTsrc { RD = UnkAlu(funct:2, RSsrc:8, RTsrc:8); }
+
+:add RD, RSsrc, RTsrc           is op=0x3f & funct=0x000 & RD & RSsrc & RTsrc { RD = RSsrc + RTsrc; }
+
+:cmp.^cmpop RSsrc, RTsrc        is op=0x3f & funct=0x005 & cmpop & RSsrc & RTsrc { COND = UnkCmp(cmpop:1, RSsrc, RTsrc); }
+
+:cmp.eq.4 RSlosrc, RTlosrc      is op=0x3f & funct=0x005 & cmpop=0x04 & RSlosrc & RTlosrc { COND = (RSlosrc == RTlosrc); }
+:cmp.eq.5 RSlosrc, RTlosrc      is op=0x3f & funct=0x005 & cmpop=0x05 & RSlosrc & RTlosrc { COND = (RSlosrc == RTlosrc); }
+:cmp.lt.6 RSlosrc, RTlosrc      is op=0x3f & funct=0x005 & cmpop=0x06 & RSlosrc & RTlosrc { COND = (RSlosrc <  RTlosrc); }
+:cmp.ne.9 RSlosrc, RTlosrc      is op=0x3f & funct=0x005 & cmpop=0x09 & RSlosrc & RTlosrc { COND = (RSlosrc != RTlosrc); }
+:cmp.gt.a RSlosrc, RTlosrc      is op=0x3f & funct=0x005 & cmpop=0x0a & RSlosrc & RTlosrc { COND = (RSlosrc >  RTlosrc); }
+
+:or  RD, RSsrc, RTsrc           is op=0x3f & funct=0x008 & RD & RSsrc & RTsrc { RD = RSsrc | RTsrc; }
+:mv  RD, RTsrc                  is op=0x3f & funct=0x008 & RD & RTsrc & rt=rs { RD = RTsrc; }
+
+:and RD, RSsrc, RTsrc           is op=0x3f & funct=0x00a & RD & RSsrc & RTsrc { RD = RSsrc & RTsrc; }
+
+:xor RD, RSsrc, RTsrc           is op=0x3f & funct=0x00e & RD & RSsrc & RTsrc { RD = RSsrc ^ RTsrc; }
+
+:lw.r.zx RDlo, RSlosrc, RTlosrc is op=0x3f & funct=0x018 & RDlo & RSlosrc & RTlosrc { RDlo = zext(*[ram]:1 (RSlosrc + RTlosrc)); }
+:lw.r RDlo, RSlosrc, RTlosrc    is op=0x3f & funct=0x019 & RDlo & RSlosrc & RTlosrc { RDlo = *[ram]:4 (RSlosrc + RTlosrc); }
+
+:ret.r RD, RSsrc, RTlosrc       is op=0x3f & funct=0x025 & RD & RSsrc & RTlosrc { goto [RTlosrc]; }
+
+:ret.r RD, RSsrc, RTlosrc       is op=0x3f & funct=0x025 & RD & RSsrc & RTlosrc & rt=3 { return [RTlosrc]; }
+
+:ret.d RD, RSsrc, RTsrc         is op=0x3f & funct=0x02d & RD & RSsrc & RTsrc { return [retaddr]; }
+
+:shl RDlo, RSlosrc, shamt       is op=0x3f & funct=0x081 & RDlo & RSlosrc & shamt { RDlo = RSlosrc << shamt; }
+:shr RDlo, RSlosrc, shamt       is op=0x3f & funct=0x083 & RDlo & RSlosrc & shamt { RDlo = RSlosrc >> shamt; }
+:shr.85 RDlo, RSlosrc, shamt    is op=0x3f & funct=0x085 & RDlo & RSlosrc & shamt { RDlo = RSlosrc >> shamt; }
+:shr.8a RD, RSsrc, shamt        is op=0x3f & funct=0x08a & RD & RSsrc & shamt { RD = RSsrc >> shamt; }
+:shr.8b RD, RSsrc, shamt        is op=0x3f & funct=0x08b & RD & RSsrc & shamt { RD = RSsrc >> shamt; }

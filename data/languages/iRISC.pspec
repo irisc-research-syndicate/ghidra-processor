@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<processor_spec>
+    <properties>
+        <property key="addressesDoNotAppearDirectlyInCode" value="true"/>
+        <property key="resetContextOnUpgrade" value="true"/>
+    </properties>
+    <programcounter register="pc"/>
+    <register_data>
+        <register name="retaddr" hidden="true"/>
+    </register_data>
+</processor_spec>

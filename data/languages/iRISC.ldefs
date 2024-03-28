@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language_definitions>
+   <language processor="iRISC"
+            endian="big"
+            size="32"
+            variant="default"
+            version="1.0"
+            slafile="iRISC.sla"
+            processorspec="iRISC.pspec"
+            id="iRISC:BE:32:default">
+    <description>iRISC Mellanox processor</description>
+    <compiler name="default" spec="iRISC.cspec" id="default"/>
+  </language> 
+</language_definitions>
+

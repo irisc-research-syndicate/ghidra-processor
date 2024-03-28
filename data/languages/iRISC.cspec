@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<compiler_spec>
+    <stackpointer register="r1l" space="ram" growth="negative"/>
+
+    <global>
+        <range space="ram"/>
+        <range space="register" first="0x40000" last="0x7ffff"/>
+    </global>
+
+    <returnaddress>
+        <register name="retaddr"/>
+    </returnaddress>
+
+    <default_proto>
+        <prototype name="__cdecl" extrapop="0" stackshift="0">
+            <input>
+                <pentry minsize="1" maxsize="4">
+                    <register name="r4l"/>
+                </pentry>
+                <pentry minsize="1" maxsize="4">
+                    <register name="r5l"/>
+                </pentry>
+                <pentry minsize="1" maxsize="4">
+                    <register name="r6l"/>
+                </pentry>
+                <pentry minsize="1" maxsize="4">
+                    <register name="r7l"/>
+                </pentry>
+                <pentry minsize="1" maxsize="4">
+                    <register name="r8l"/>
+                </pentry>
+                <pentry minsize="1" maxsize="4">
+                    <register name="r9l"/>
+                </pentry>
+                <pentry minsize="1" maxsize="4">
+                    <register name="r10l"/>
+                </pentry>
+            </input>
+            <output>
+                <pentry minsize="1" maxsize="4">
+                    <register name="r4l"/>
+                </pentry>
+                <pentry minsize="1" maxsize="4">
+                    <register name="r5l"/>
+                </pentry>
+            </output>
+            <killedbycall>
+                <register name="r3"/>
+            </killedbycall>
+            <unaffected>
+                <register name="r1"/>
+                <register name="r19"/>
+                <register name="r20"/>
+                <register name="r21"/>
+                <register name="r22"/>
+                <register name="r23"/>
+                <register name="r31"/>
+            </unaffected>
+        </prototype>
+    </default_proto>
+</compiler_spec>
