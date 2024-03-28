@@ -51,7 +51,7 @@ define register offset=0x80000 size=4 [
 ];
 
 define register offset=0x81000 size=1 [
-    Z C N V LT GE
+    Z64 C64 N64 V64 Z32 C32 N32 V32
 ];
 
 define token instr(32)
@@ -155,19 +155,22 @@ CSRREG: reloc is imm16 [ reloc=0x40000 + 4*imm16; ] { export *[register]:4 reloc
 
 define pcodeop unkBrCond;
 
-cc: "unk."^cmpop is cmpop { tmp1:1 = unkBrCond(cmpop:1, Z, N, C, V); export tmp1; }
-cc: "eq.0x00" is cmpop=0x00 { export Z; }
-cc: "slt.0x01" is cmpop=0x01 { tmp1 = N == 1; export tmp1; }
-cc: "ult.0x02" is cmpop=0x02 { tmp1 = C == 1; export tmp1; }
-cc: "uge.0x03" is cmpop=0x03 { tmp1 = C == 1; export tmp1; }
-cc: "slt.0x04" is cmpop=0x04 { tmp1 = N == 1; export tmp1; }
+cc: "unk."^cmpop is cmpop { tmp1:1 = unkBrCond(cmpop:1, Z32, N32, C32, V32); export tmp1; }
+cc: "eq32"  is cmpop=0x00 { export Z32; }
+cc: "gt32"  is cmpop=0x01 { export N32; }
+cc: "lt32"  is cmpop=0x02 { tmp1 = Z32 == 0 && N32 == 0; export tmp1; }
+cc: "ugt32" is cmpop=0x03 { tmp1 = C32 == 1; export tmp1; }
+cc: "ult32" is cmpop=0x04 { tmp1 = Z32 == 0 && C32 == 0; export tmp1; }
+cc: "neg32" is cmpop=0x0c { export V32; }
+cc: "pos32" is cmpop=0x0d { tmp1 = V32 == 0 && Z32 == 0; export tmp1; }
 
-macro resultflags(a, b) {
-    N = (a s< b);
-    Z = (a == b);
-    C = (a < b);
-    V = 0;
-}
+cc: "eq64"  is cmpop=0x10 { export Z64; }
+cc: "gt64"  is cmpop=0x11 { export N64; }
+cc: "lt64"  is cmpop=0x12 { tmp1 = Z64 == 0 && N64 == 0; export tmp1; }
+cc: "ugt64" is cmpop=0x13 { tmp1 = C64 == 1; export tmp1; }
+cc: "ult64" is cmpop=0x14 { tmp1 = Z64 == 0 && C64 == 0; export tmp1; }
+cc: "neg64" is cmpop=0x1c { export V64; }
+cc: "pos64" is cmpop=0x1d { tmp1 = V64 == 0 && Z64 == 0; export tmp1; }
 
 define pcodeop unkOp;
 define pcodeop UnkCmp;
@@ -183,44 +186,15 @@ define pcodeop UnkAlu;
     RD = RSsrc + (simm16 << 16);
 }
 
-:cmpi.unk.^cmpop  RSsrc, simm16     is op=0x05 & cmpop & RSsrc & simm16 {
-    Z = UnkCmp(cmpop:1, RSsrc:4, simm16:4);
-    N = UnkCmp(cmpop:1, RSsrc:4, simm16:4);
-    C = UnkCmp(cmpop:1, RSsrc:4, simm16:4);
-    V = UnkCmp(cmpop:1, RSsrc:4, simm16:4);
-}
-
-:cmpi.lt.0x04 RSlosrc, simm16     is op=0x05 & cmpop=0x04 & RSlosrc & simm16 {
-    resultflags(RSlosrc, simm16);
-}
-
-:cmpi.lt.0x05 RSlosrc, simm16     is op=0x05 & cmpop=0x05 & RSlosrc & simm16 {
-    resultflags(RSlosrc, simm16);
-}
-
-:cmpi.lt.0x06 RSlosrc, simm16     is op=0x05 & cmpop=0x06 & RSlosrc & simm16 {
-    resultflags(simm16, RSlosrc);
-}
-
-:cmpi.lt.0x07 RSlosrc, simm16     is op=0x05 & cmpop=0x07 & RSlosrc & simm16 {
-#    resultflags(RSlosrc, simm16);
-    resultflags(simm16, RSlosrc);
-}
-
-:cmpi.lt.0x08 RSlosrc, simm16     is op=0x05 & cmpop=0x08 & RSlosrc & simm16 {
-    resultflags(simm16, RSlosrc);
-}
-
-:cmpi.lt.0x09 RSlosrc, simm16     is op=0x05 & cmpop=0x09 & RSlosrc & simm16 {
-    resultflags(simm16, RSlosrc);
-}
-
-:cmpi.lt.0x0a RSlosrc, simm16     is op=0x05 & cmpop=0x0a & RSlosrc & simm16 {
-    resultflags(simm16, RSlosrc);
-}
-
-:cmpi.lt.0x17 RSlosrc, simm16     is op=0x05 & cmpop=0x17 & RSlosrc & simm16 {
-    resultflags(RSlosrc, simm16);
+:subsi RD, RSsrc, simm16 is op=0x05 & RD & RDsrc & RDlosrc & RSsrc & RSlosrc & simm16 {
+    RD = RSsrc - simm16;
+    C64 = carry(RSsrc, simm16);
+    C32 = carry(RSlosrc, simm16);
+    RD = RSsrc - simm16;
+    N64 = (RDsrc s< 0);
+    Z64 = (RDsrc == 0);
+    N32 = (RDlosrc s< 0);
+    Z32 = (RDlosrc == 0);
 }
 
 :or_b0 RD, RSsrc, imm16         is op=0x06 & RD & RSsrc & imm16 {
@@ -296,8 +270,8 @@ define pcodeop WRCSR;
 :call REL24                     is op=0x25 & jmpop=0x0 & REL24 { call REL24; }
 :jump REL24                     is op=0x25 & jmpop=0x1 & REL24 { goto REL24; }
 
-:b.0x28.^cc RSsrc, REL16           is op=0x28 & cc & RSsrc & REL16 { if(cc) goto REL16; }
-:b.0x29.^cc RSsrc, REL16           is op=0x29 & cc & RSsrc & REL16 { if(!cc) goto REL16; }
+:b.t.^cc RSsrc, REL16           is op=0x28 & cc & RSsrc & REL16 { if(cc) goto REL16; }
+:b.f.^cc RSsrc, REL16           is op=0x29 & cc & RSsrc & REL16 { if(!cc) goto REL16; }
 
 :b.bset cmpshamt, RSsrc, REL16  is op=0x2a & cmpshamt & RSsrc & REL16 { if(((RSsrc >> cmpshamt) & 1) == 1) goto REL16; }
 :b.bclr cmpshamt, RSsrc, REL16  is op=0x2b & cmpshamt & RSsrc & REL16 { if(((RSsrc >> cmpshamt) & 1) == 0) goto REL16; }
@@ -305,35 +279,29 @@ define pcodeop WRCSR;
 :alu.^funct RD, RSsrc, RTsrc    is op=0x3f & funct & RD & RSsrc & RTsrc { RD = UnkAlu(funct:2, RSsrc:8, RTsrc:8); }
 
 :add RD, RSsrc, RTsrc           is op=0x3f & funct=0x000 & RD & RSsrc & RTsrc { RD = RSsrc + RTsrc; }
-:add RD, RSsrc, RTsrc           is op=0x3f & funct=0x004 & RD & RSsrc & RTsrc { RD = RTsrc - RSsrc; }
-
-:cmpr.unk.^cmpop RSlosrc, RTlosrc       is op=0x3f & funct=0x005 & cmpop & RSlosrc & RTlosrc {
-    Z = UnkCmp(cmpop:1, RSlosrc, RTlosrc);
-    N = UnkCmp(cmpop:1, RSlosrc, RTlosrc);
-    C = UnkCmp(cmpop:1, RSlosrc, RTlosrc);
-    V = UnkCmp(cmpop:1, RSlosrc, RTlosrc);
-}
-
-:cmpr.lt.0x4 RSlosrc, RTlosrc           is op=0x3f & funct=0x005 & cmpop=0x04 & RSlosrc & RTlosrc { 
-    resultflags(RSlosrc:4, RTlosrc:4);
-}
-
-:cmpr.lt.0x5 RSsrc, RTsrc               is op=0x3f & funct=0x005 & cmpop=0x05 & RSsrc & RTsrc { 
-    resultflags(RTsrc:4, RSsrc:4);
-}
-
-:cmpr.eq.0x6 RSlosrc, RTlosrc           is op=0x3f & funct=0x005 & cmpop=0x06 & RSlosrc & RTlosrc { 
-    resultflags(RSlosrc, RTlosrc);
-}
-
-:cmpr.unk.0x7 RSlosrc, RTlosrc           is op=0x3f & funct=0x005 & cmpop=0x07 & RSlosrc & RTlosrc { 
-    resultflags(RSlosrc, RTlosrc);
+:adds RD, RSsrc, RTsrc          is op=0x3f & funct=0x001 & RD & RSsrc & RTsrc { RD = RSsrc + RTsrc; }
+:sub RD, RSsrc, RTsrc           is op=0x3f & funct=0x004 & RD & RSsrc & RTsrc { RD = RTsrc - RSsrc; }
+:subs RD, RSsrc, RTsrc          is op=0x3f & funct=0x005 & RD & RDsrc & RDlosrc & RSsrc & RSlosrc & RTsrc & RTlosrc {
+    C64 = carry(RSsrc, RTsrc);
+    C32 = carry(RSlosrc, RTlosrc);
+    RD = RTsrc - RSsrc;
+    N64 = (RDsrc s< 0);
+    Z64 = (RDsrc == 0);
+    N32 = (RDlosrc s< 0);
+    Z32 = (RDlosrc == 0);
 }
 
 :or  RD, RSsrc, RTsrc           is op=0x3f & funct=0x008 & RD & RSsrc & RTsrc { RD = RSsrc | RTsrc; }
 :mv  RD, RTsrc                  is op=0x3f & funct=0x008 & RD & RTsrc & rt=rs { RD = RTsrc; }
 
 :and RD, RSsrc, RTsrc           is op=0x3f & funct=0x00a & RD & RSsrc & RTsrc { RD = RSsrc & RTsrc; }
+:ands RD, RSsrc, RTsrc          is op=0x3f & funct=0x00b & RD & RDsrc & RDlosrc & RSsrc & RTsrc {
+    RD = RSsrc & RTsrc;
+    N64 = (RDsrc s< 0);
+    Z64 = (RDsrc == 0);
+    N32 = (RDlosrc s< 0);
+    Z32 = (RDlosrc == 0);
+}
 
 :xor RD, RSsrc, RTsrc           is op=0x3f & funct=0x00e & RD & RSsrc & RTsrc { RD = RSsrc ^ RTsrc; }
 
@@ -342,7 +310,8 @@ define pcodeop WRCSR;
 
 :ret.r RD, RSsrc, RTlosrc       is op=0x3f & funct=0x025 & RD & RSsrc & RTlosrc { goto [RTlosrc]; }
 
-:ret.r RD, RSsrc, RTlosrc       is op=0x3f & funct=0x025 & RD & RSsrc & RTlosrc & rt=3 { return [RTlosrc]; }
+:ret.r RD, RSsrc, RTlosrc       is op=0x3f & funct=0x025 & RD & rs=8 & RSsrc & RTlosrc & rt=3 { return [RTlosrc]; }
+:jalr RTlosrc                   is op=0x3f & funct=0x025 & rd=0 & rs=0 & RTlosrc { call [RTlosrc]; }
 
 :ret.d RD, RSsrc, RTsrc         is op=0x3f & funct=0x02d & RD & RSsrc & RTsrc { return [retaddr]; }
 
