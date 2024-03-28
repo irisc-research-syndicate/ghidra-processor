@@ -222,9 +222,6 @@ define pcodeop UnkAlu;
     RD = RSsrc ^ imm16;
 }
 
-#:op10 RD, RSsrc, simm16 is simm16 & op=0x0a & RD & RSsrc unimpl
-#:op11 RD, RSsrc, simm16 is simm16 & op=0x0b & RD & RSsrc unimpl
-
 define pcodeop RDCSR;
 define pcodeop WRCSR;
 
