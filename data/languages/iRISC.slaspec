@@ -236,8 +236,8 @@ define pcodeop WRCSR;
     RD = *[ram]:8 (RSlosrc + RTlosrc + (OFF9_SHL2 & 0xfffffff8));
 }
 
-:ld.18 RD, RSlosrc, RTlosrc, OFF11 is op=0x18 & RD & RSlosrc & RTlosrc & OFF11 {
-    RD = zext(*[ram]:1 (RSlosrc + RTlosrc + OFF11));
+:ld.b RD, RSlosrc, simm16 is op=0x18 & RD & RSlosrc & simm16 {
+    RD = zext(*[ram]:1 (RSlosrc + simm16));
 }
 
 :ld.19 RD, RSlosrc, RTlosrc, OFF9, width is op=0x19 & RD & RSlosrc & RTlosrc & OFF9 & width {
