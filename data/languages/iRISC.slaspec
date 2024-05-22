@@ -77,6 +77,9 @@ define token instr(32)
     off9=(2, 10) signed
     width=(0, 1)
     off11=(0, 10) signed
+
+    mask=(0, 4)
+    shift=(5, 10)
 ;
 
 attach variables [ rd rs rt ] [
@@ -272,6 +275,14 @@ define pcodeop WRCSR;
 
 :b.bset cmpshamt, RSsrc, REL16  is op=0x2a & cmpshamt & RSsrc & REL16 { if(((RSsrc >> cmpshamt) & 1) == 1) goto REL16; }
 :b.bclr cmpshamt, RSsrc, REL16  is op=0x2b & cmpshamt & RSsrc & REL16 { if(((RSsrc >> cmpshamt) & 1) == 0) goto REL16; }
+
+MASK: mask                      is mask { tmp:8 = (1 << mask) - 1; export tmp; }
+
+MASK: 0                         is mask=0x0 { export 0xffffffff:8; }
+
+:mask32 RD, RSsrc, shift, MASK  is op=0x32 & RD & RSsrc & shift & MASK {
+    RD = (RSsrc >> shift) & MASK;
+}
 
 :alu.^funct RD, RSsrc, RTsrc    is op=0x3f & funct & RD & RSsrc & RTsrc { RD = UnkAlu(funct:2, RSsrc:8, RTsrc:8); }
 
