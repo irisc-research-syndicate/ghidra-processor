@@ -245,8 +245,21 @@ define pcodeop WRCSR;
     RD = zext(*[ram]:1 (RSlosrc + simm16));
 }
 
-:ld.19 RD, RSlosrc, RTlosrc, OFF9, width is op=0x19 & RD & RSlosrc & RTlosrc & OFF9 & width {
-    RD = zext(*[ram]:4 (RSlosrc + RTlosrc + OFF9));
+
+:ld.q RD, RSlosrc, OFF14        is op=0x19 & RD & RSlosrc & OFF14 & width=0 {
+    RD = zext(*[ram]:4 (RSlosrc + OFF14));
+}
+
+:ld.uw RD, RSlosrc, OFF14       is op=0x19 & RD & RSlosrc & OFF14 & width=1 {
+    RD = zext(*[ram]:2 (RSlosrc + OFF14));
+}
+
+:ld.d RD, RSlosrc, OFF14        is op=0x19 & RD & RSlosrc & OFF14 & width=2 {
+    RD = zext(*[ram]:4 (RSlosrc + OFF14));
+}
+
+:ld.lw RD, RSlosrc, OFF14       is op=0x19 & RD & RSlosrc & OFF14 & width=3 {
+    RD = zext(*[ram]:2 (RSlosrc + OFF14 + 2));
 }
 
 :st.1a RDlosrc, RSlosrc, RTlosrc, OFF11  is op=0x1a & RDlosrc & RSlosrc & RTlosrc & OFF11 {
