@@ -74,9 +74,12 @@ define token instr(32)
     imm16=(0, 15)
     simm16=(0, 15) signed
     funct=(0, 8)
+
     off9=(2, 10) signed
-    width=(0, 1)
+    off14=(2, 15) signed
     off11=(0, 10) signed
+
+    width=(0, 1)
 
     mask=(0, 4)
     shift=(5, 10)
@@ -147,6 +150,8 @@ OFF9: reloc is off9 & width=0 [ reloc=1*off9; ] { export *[const]:4 reloc; }
 OFF9: reloc is off9 & width=1 [ reloc=2*off9; ] { export *[const]:4 reloc; }
 OFF9: reloc is off9 & width=2 [ reloc=4*off9; ] { export *[const]:4 reloc; }
 OFF9: reloc is off9 & width=3 [ reloc=8*off9; ] { export *[const]:4 reloc; }
+
+OFF14: reloc is off14 [ reloc=4*off14; ] { export *[const]:4 reloc; }
 
 OFF9_SHL2: reloc is off9 [ reloc=4*off9; ] { export *[const]:4 reloc; }
 
