@@ -110,25 +110,11 @@ RD: rd is rd { export rd; }
 RDsrc: rd is rd { export rd; }
 RDsrc: rd is rd & rd=0 { export 0:8; }
 
-#RS: rs is rs { export rs; }
 RSsrc: rs is rs { export rs; }
 RSsrc: rs is rs & rs=0 { export 0:8; }
 
-#RT: rt is rt { export rt; }
 RTsrc: rt is rt { export rt; }
 RTsrc: rt is rt & rt=0 { export 0:8; }
-
-#RDhi: rdhi is rdhi { export rdhi; }
-#RDhisrc: rdhi is rdhi { export rdhi; }
-#RDhisrc: rdhi is rdhi & rdhi=0 { export 0:4; }
-
-#RShi: rshi is rshi { export rshi; }
-#RShisrc: rshi is rshi { export rshi; }
-#RShisrc: rshi is rshi & rshi=0 { export 0:4; }
-
-#RThi: rthi is rthi { export rthi; }
-#RThisrc: rthi is rthi { export rthi; }
-#RThisrc: rthi is rthi & rthi=0 { export 0:4; }
 
 RDlo: rdlo is rdlo { export rdlo; }
 RDlosrc: rdlo is rdlo { export rdlo; }
@@ -138,7 +124,6 @@ RSlo: rslo is rslo { export rslo; }
 RSlosrc: rslo is rslo { export rslo; }
 RSlosrc: rslo is rslo & rslo=0 { export 0:4; }
 
-#RTlo: rtlo is rtlo { export rtlo; }
 RTlosrc: rtlo is rtlo { export rtlo; }
 RTlosrc: rtlo is rtlo & rtlo=0 { export 0:4; }
 
@@ -156,8 +141,6 @@ OFF14: reloc is off14 [ reloc=4*off14; ] { export *[const]:4 reloc; }
 OFF9_SHL2: reloc is off9 [ reloc=4*off9; ] { export *[const]:4 reloc; }
 
 OFF11: off11 is off11 { export *[const]:4 off11; }
-
-# MEM9: off9(RTlo+RSlo) is off9 & 
 
 CSRREG: reloc is imm16 [ reloc=0x40000 + 4*imm16; ] { export *[register]:4 reloc; }
 
@@ -270,8 +253,6 @@ define pcodeop WRCSR;
     *[ram]:4 (RDlosrc + RSlosrc + OFF9) = RTlosrc;
 }
 
-#:st.1c.b RD, RSsrc, RTsrc, OFF9 is OFF9 & width=0 & op=0x1c & RD & RSsrc & RTsrc {}
-#:st.1c.w RD, RSsrc, RTsrc, OFF9 is OFF9 & width=1 & op=0x1c & RD & RSsrc & RTsrc {}
 :enter RDlo, RSlosrc, RTlosrc, OFF9 is op=0x1c & width=2 & RDlo & RSlosrc & RTlosrc & RSlo & OFF9 & RD {
     *[ram]:4 (RSlosrc + OFF9) = RTlosrc;
     RDlo = RSlo;
