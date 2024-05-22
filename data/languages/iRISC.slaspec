@@ -160,7 +160,7 @@ define pcodeop unkBrCond;
 
 cc: "unk."^cmpop is cmpop { tmp1:1 = unkBrCond(cmpop:1, Z32, N32, C32, V32); export tmp1; }
 cc: "eq32"  is cmpop=0x00 { export Z32; }
-cc: "gt32"  is cmpop=0x01 { export N32; }
+cc: "gt32"  is cmpop=0x01 { tmp1 = C32 == 1; export tmp1; }
 cc: "lt32"  is cmpop=0x02 { tmp1 = Z32 == 0 && N32 == 0; export tmp1; }
 cc: "ugt32" is cmpop=0x03 { tmp1 = C32 == 1; export tmp1; }
 cc: "ult32" is cmpop=0x04 { tmp1 = Z32 == 0 && C32 == 0; export tmp1; }
@@ -191,9 +191,9 @@ define pcodeop UnkAlu;
 
 :subsi RD, RSsrc, simm16 is op=0x05 & RD & RDsrc & RDlosrc & RSsrc & RSlosrc & simm16 {
     RD = RSsrc - simm16;
-    C64 = carry(RSsrc, simm16);
-    C32 = carry(RSlosrc, simm16);
-    RD = RSsrc - simm16;
+    C64 = RSsrc > simm16;
+    C32 = RSlosrc > simm16;
+    RD = simm16 - RSsrc;
     N64 = (RDsrc s< 0);
     Z64 = (RDsrc == 0);
     N32 = (RDlosrc s< 0);
@@ -290,9 +290,9 @@ MASK: 0                         is mask=0x0 { export 0xffffffff:8; }
 :adds RD, RSsrc, RTsrc          is op=0x3f & funct=0x001 & RD & RSsrc & RTsrc { RD = RSsrc + RTsrc; }
 :sub RD, RSsrc, RTsrc           is op=0x3f & funct=0x004 & RD & RSsrc & RTsrc { RD = RTsrc - RSsrc; }
 :subs RD, RSsrc, RTsrc          is op=0x3f & funct=0x005 & RD & RDsrc & RDlosrc & RSsrc & RSlosrc & RTsrc & RTlosrc {
-    C64 = carry(RSsrc, RTsrc);
-    C32 = carry(RSlosrc, RTlosrc);
-    RD = RTsrc - RSsrc;
+    C64 = RTsrc < RSsrc;
+    C32 = RTlosrc < RSlosrc;
+    RD = RSsrc - RTsrc;
     N64 = (RDsrc s< 0);
     Z64 = (RDsrc == 0);
     N32 = (RDlosrc s< 0);
