@@ -79,6 +79,10 @@ define token instr(32)
     off14=(2, 15) signed
     off11=(0, 10) signed
 
+    storeoff_hi=(16, 20) signed
+    storeoff16_lo = (0, 10)
+    storeoff14_lo = (2, 10)
+
     width=(0, 1)
 
     mask=(0, 4)
@@ -135,6 +139,9 @@ OFF9: reloc is off9 & width=0 [ reloc=1*off9; ] { export *[const]:4 reloc; }
 OFF9: reloc is off9 & width=1 [ reloc=2*off9; ] { export *[const]:4 reloc; }
 OFF9: reloc is off9 & width=2 [ reloc=4*off9; ] { export *[const]:4 reloc; }
 OFF9: reloc is off9 & width=3 [ reloc=8*off9; ] { export *[const]:4 reloc; }
+
+STOREOFF16: reloc is storeoff_hi & storeoff16_lo [ reloc = (storeoff_hi << 11) | (storeoff16_lo << 0); ] { export *[const]:4 reloc; }
+STOREOFF14: reloc is storeoff_hi & storeoff14_lo [ reloc = (storeoff_hi << 11) | (storeoff14_lo << 2); ] { export *[const]:4 reloc; }
 
 OFF14: reloc is off14 [ reloc=4*off14; ] { export *[const]:4 reloc; }
 
