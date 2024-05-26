@@ -252,18 +252,27 @@ define pcodeop WRCSR;
     RD = zext(*[ram]:2 (RSlosrc + OFF14 + 2));
 }
 
-:st.1a RDlosrc, RSlosrc, RTlosrc, OFF11  is op=0x1a & RDlosrc & RSlosrc & RTlosrc & OFF11 {
-    *[ram]:1 (RDlosrc + RSlosrc + OFF11) = RTlosrc:1;
+
+:st.b RTlosrc, RSlosrc, STOREOFF16  is op=0x1a & RSlosrc & RTlosrc & STOREOFF16 {
+    *[ram]:1 (RSlosrc + STOREOFF16) = RTlosrc:1;
 }
 
 :st.1b RDlosrc, RSlosrc, RTlosrc, OFF9, width is OFF9 & width & op=0x1b & RDlosrc & RSlosrc & RTlosrc {
     *[ram]:4 (RDlosrc + RSlosrc + OFF9) = RTlosrc;
 }
 
-:enter RDlo, RSlosrc, RTlosrc, OFF9 is op=0x1c & width=2 & RDlo & RSlosrc & RTlosrc & RSlo & OFF9 & RD {
-    *[ram]:4 (RSlosrc + OFF9) = RTlosrc;
-    RDlo = RSlo;
-    RSlo = RSlosrc + OFF9;
+:st.q RTsrc, RSlosrc, STOREOFF14 is op=0x1b & width=0 & RTsrc & RSlosrc & STOREOFF14 {
+    *[ram]:8 (RSlosrc + STOREOFF14) = RTsrc;
+}
+
+:st.d RTlosrc, RSlosrc, STOREOFF14 is op=0x1b & width=2 & RTlosrc & RSlosrc & STOREOFF14 {
+    *[ram]:4 (RSlosrc + STOREOFF14) = RTlosrc;
+}
+
+
+:enter RTlosrc, RSlosrc, STOREOFF14 is op=0x1c & width=2 & RSlosrc & RTlosrc & RSlo & STOREOFF14 {
+    *[ram]:4 (RSlosrc + STOREOFF14) = RTlosrc;
+    RSlo = RSlosrc + STOREOFF14;
 }
 
 :st.1c.q RD, RSsrc, RTsrc, OFF9 is op=0x1c & RD & RSsrc & RTsrc & OFF9 { }
