@@ -72,18 +72,26 @@ define token instr(32)
     rtlo=(11, 15)
     shamt=(11, 15)
     imm16=(0, 15)
+    imm11=(0, 10)
     simm16=(0, 15) signed
     funct=(0, 8)
 
     off9=(2, 10) signed
     off14=(2, 15) signed
+    off15=(1, 15) signed
     off11=(0, 10) signed
 
     storeoff_hi=(16, 20) signed
     storeoff16_lo = (0, 10)
+    storeoff15_lo = (1, 10)
     storeoff14_lo = (2, 10)
 
-    width=(0, 1)
+    storecsroff = (0, 20)
+    loadcsroff_lo = (0, 15)
+    loadcsroff_hi = (21, 25)
+
+    is16bit=(0, 0)
+    is32bit=(1, 1)
 
     mask=(0, 4)
     shift=(5, 10)
@@ -135,15 +143,12 @@ REL16: reloc is simm16 [ reloc=inst_start + 4*simm16; ] { export *:8 reloc; }
 
 REL24: reloc is simm24 [ reloc=inst_start + 4*simm24; ] { export *:8 reloc; }
 
-OFF9: reloc is off9 & width=0 [ reloc=1*off9; ] { export *[const]:4 reloc; }
-OFF9: reloc is off9 & width=1 [ reloc=2*off9; ] { export *[const]:4 reloc; }
-OFF9: reloc is off9 & width=2 [ reloc=4*off9; ] { export *[const]:4 reloc; }
-OFF9: reloc is off9 & width=3 [ reloc=8*off9; ] { export *[const]:4 reloc; }
-
-STOREOFF16: reloc is storeoff_hi & storeoff16_lo [ reloc = (storeoff_hi << 11) | (storeoff16_lo << 0); ] { export *[const]:4 reloc; }
 STOREOFF14: reloc is storeoff_hi & storeoff14_lo [ reloc = (storeoff_hi << 11) | (storeoff14_lo << 2); ] { export *[const]:4 reloc; }
+STOREOFF15: reloc is storeoff_hi & storeoff15_lo [ reloc = (storeoff_hi << 11) | (storeoff15_lo << 1); ] { export *[const]:4 reloc; }
+STOREOFF16: reloc is storeoff_hi & storeoff16_lo [ reloc = (storeoff_hi << 11) | (storeoff16_lo << 0); ] { export *[const]:4 reloc; }
 
-OFF14: reloc is off14 [ reloc=4*off14; ] { export *[const]:4 reloc; }
+OFF14: reloc is off14 [ reloc = off14 << 2; ] { export *[const]:4 reloc; }
+OFF15: reloc is off15 [ reloc = off15 << 1; ] { export *[const]:4 reloc; }
 
 OFF9_SHL2: reloc is off9 [ reloc=4*off9; ] { export *[const]:4 reloc; }
 
@@ -259,20 +264,16 @@ define pcodeop WRCSR;
 }
 
 
-:ld.q RD, RSlosrc, OFF14        is op=0x19 & RD & RSlosrc & OFF14 & width=0 {
+:ld.q RD, RSlosrc, OFF14        is op=0x19 & RD & RSlosrc & OFF14 & is16bit=0 & is32bit=0 {
+    RD = *[ram]:8 (RSlosrc + OFF14);
+}
+
+:ld.d RD, RSlosrc, OFF14        is op=0x19 & RD & RSlosrc & OFF14 & is16bit=0 & is32bit=1 {
     RD = zext(*[ram]:4 (RSlosrc + OFF14));
 }
 
-:ld.uw RD, RSlosrc, OFF14       is op=0x19 & RD & RSlosrc & OFF14 & width=1 {
-    RD = zext(*[ram]:2 (RSlosrc + OFF14));
-}
-
-:ld.d RD, RSlosrc, OFF14        is op=0x19 & RD & RSlosrc & OFF14 & width=2 {
-    RD = zext(*[ram]:4 (RSlosrc + OFF14));
-}
-
-:ld.lw RD, RSlosrc, OFF14       is op=0x19 & RD & RSlosrc & OFF14 & width=3 {
-    RD = zext(*[ram]:2 (RSlosrc + OFF14 + 2));
+:ld.w RD, RSlosrc, OFF15        is op=0x19 & RD & RSlosrc & OFF15 & is16bit=1 {
+    RD = zext(*[ram]:2 (RSlosrc + OFF15));
 }
 
 
@@ -280,28 +281,38 @@ define pcodeop WRCSR;
     *[ram]:1 (RSlosrc + STOREOFF16) = RTlosrc:1;
 }
 
-:st.1b RDlosrc, RSlosrc, RTlosrc, OFF9, width is OFF9 & width & op=0x1b & RDlosrc & RSlosrc & RTlosrc {
-    *[ram]:4 (RDlosrc + RSlosrc + OFF9) = RTlosrc;
-}
 
-:st.q RTsrc, RSlosrc, STOREOFF14 is op=0x1b & width=0 & RTsrc & RSlosrc & STOREOFF14 {
+:st.q RTsrc, RSlosrc, STOREOFF14    is op=0x1b & RTsrc & RSlosrc & STOREOFF14 & is16bit=0 & is32bit=0 {
     *[ram]:8 (RSlosrc + STOREOFF14) = RTsrc;
 }
 
-:st.d RTlosrc, RSlosrc, STOREOFF14 is op=0x1b & width=2 & RTlosrc & RSlosrc & STOREOFF14 {
+:st.d RTlosrc, RSlosrc, STOREOFF14  is op=0x1b & RTlosrc & RSlosrc & STOREOFF14 & is16bit=0 & is32bit=1 {
     *[ram]:4 (RSlosrc + STOREOFF14) = RTlosrc;
 }
 
+:st.w RTlosrc, RSlosrc, STOREOFF15  is op=0x1b & RTlosrc & RSlosrc & STOREOFF15 & is16bit=1 {
+    *[ram]:2 (RSlosrc + STOREOFF15) = RTlosrc:2;
+}
 
-:enter RTlosrc, RSlosrc, STOREOFF14 is op=0x1c & width=2 & RSlosrc & RTlosrc & RSlo & STOREOFF14 {
+
+:st.q! RTsrc, RSlosrc, STOREOFF14   is op=0x1c & RSlosrc & RTsrc & RSlo & STOREOFF14 & is16bit=0 & is32bit=0 {
+    *[ram]:8 (RSlosrc + STOREOFF14) = RTsrc;
+    RSlo = RSlosrc + STOREOFF14;
+}
+
+:st.d! RTlosrc, RSlosrc, STOREOFF14  is op=0x1c & RSlosrc & RTlosrc & RSlo & STOREOFF14 & is16bit=0 & is32bit=1 {
     *[ram]:4 (RSlosrc + STOREOFF14) = RTlosrc;
     RSlo = RSlosrc + STOREOFF14;
 }
 
-:st.1c.q RD, RSsrc, RTsrc, OFF9 is op=0x1c & RD & RSsrc & RTsrc & OFF9 { }
+:st.w! RTlosrc, RSlosrc, STOREOFF15 is op=0x1c & RSlosrc & RTlosrc & RSlo & STOREOFF15 & is16bit=1 {
+    *[ram]:2 (RSlosrc + STOREOFF15) = RTlosrc:2;
+    RSlo = RSlosrc + STOREOFF15;
+}
 
-:st.1e.q RDlosrc, RSlosrc, RTsrc, OFF9_SHL2 is op=0x1e & RDlosrc & RSlosrc & RTsrc & OFF9_SHL2 {
-    *[ram]:8 (RDlosrc+RSlosrc+(OFF9_SHL2 & 0xfffffff8)) = RTsrc;
+
+:st.q? RTsrc, RSlosrc, STOREOFF14 is op=0x1e & RDlosrc & RSlosrc & RTsrc & STOREOFF14 & is16bit=0 & is32bit=0 {
+    *[ram]:8 (RSlosrc+STOREOFF14) = RTsrc;
 }
 
 :jump.^jmpop REL24              is op=0x25 & jmpop & REL24 { goto REL24; }
