@@ -20,8 +20,8 @@ define register offset=0x00000 size=4 [
 ];
 
 define register offset=0x40000 size=4 [
-    csr0000 csr0001 csr0002 csr0003 csr0004 csr0005 csr0006 csr0007
-    csr0008 csr0009 csr000a csr000b csr000c csr000d csr000e csr000f
+    csr0000 csr0001 debug_mask debug_level csr0004 csr0005 csr0006 csr0007
+    trace_addr csr0009 csr000a csr000b trace_data csr000d csr000e csr000f
 ];
 
 define register offset=0x402c0 size=4 [
