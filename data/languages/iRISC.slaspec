@@ -372,7 +372,8 @@ MASK: 0                         is mask=0x0 { export 0xffffffff:8; }
 
 :ret.d RD, RSsrc, RTsrc         is op=0x3f & funct=0x02d & RD & RSsrc & RTsrc { return [retaddr]; }
 
-:shl RDlo, RSlosrc, shamt       is op=0x3f & funct=0x081 & RDlo & RSlosrc & shamt { RDlo = RSlosrc << shamt; }
+:shl64.r RD, RSsrc, RTsrc       is op=0x3f & funct=0x080 & RD & RSsrc & RTsrc { RD = RSsrc << RTsrc; }
+:shl64.i RD, RSsrc, shamt       is op=0x3f & funct=0x081 & RD & RSsrc & shamt { RD = RSsrc << shamt; }
 :shr RDlo, RSlosrc, shamt       is op=0x3f & funct=0x083 & RDlo & RSlosrc & shamt { RDlo = RSlosrc >> shamt; }
 :shr.85 RDlo, RSlosrc, shamt    is op=0x3f & funct=0x085 & RDlo & RSlosrc & shamt { RDlo = RSlosrc >> shamt; }
 :shr.8a RD, RSsrc, shamt        is op=0x3f & funct=0x08a & RD & RSsrc & shamt { RD = RSsrc >> shamt; }
