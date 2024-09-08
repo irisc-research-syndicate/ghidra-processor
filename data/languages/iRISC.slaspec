@@ -174,14 +174,28 @@ define pcodeop unkOp;
 define pcodeop UnkCmp;
 define pcodeop UnkAlu;
 
-:unk.^op RD, RSsrc, RTsrc, imm16 is op & RD & RSsrc & RTsrc & imm16 { RD = unkOp(op:1, RSsrc, RTsrc); }
+:unk.^op RD, RSsrc, RTsrc, imm16 is op & RD & RSsrc & RTsrc & imm16 {
+    RD = unkOp(op:1, RSsrc, RTsrc);
+}
 
 :addi RD, RSsrc, simm16         is op=0x00 & RD & RSsrc & simm16 {
     RD = RSsrc + simm16;
 }
 
+:addi RD, RSsrc, simm16         is op=0x01 & RD & RSsrc & simm16 {
+    RD = RSsrc + simm16;
+}
+
 :addi.hi RD, RSsrc, simm16      is op=0x02 & RD & RDsrc & RSsrc & simm16 {
     RD = RSsrc + (simm16 << 16);
+}
+
+:addi.hi RD, RSsrc, simm16      is op=0x03 & RD & RDsrc & RSsrc & simm16 {
+    RD = RSsrc + (simm16 << 16);
+}
+
+:subi RD, RSsrc, simm16         is op=0x04 & RD & RSsrc & simm16 {
+    RD = RSsrc - simm16;
 }
 
 :subsi RD, RSsrc, simm16 is op=0x05 & RD & RDsrc & RDlosrc & RSsrc & RSlosrc & simm16 {
@@ -211,10 +225,19 @@ define pcodeop UnkAlu;
     RD = (RSsrc & 0xffffffff0000ffff) | (imm16 << 16);
 }
 
-:and.sx RD, RSsrc, simm16        is op=0x0a & RD & RSsrc & simm16 { RD = RSsrc & simm16; }
-:and.zx RD, RSsrc, imm16         is op=0x0b & RD & RSsrc & imm16 { RD = RSsrc & imm16; }
+:and RD, RSsrc, simm16        is op=0x0a & RD & RSsrc & simm16 {
+    RD = RSsrc & simm16;
+}
 
-:or  RD, RSsrc, imm16           is op=0x0c & RD & RSsrc & imm16 { RD = RSsrc | imm16; }
+:ands RD, RSsrc, imm16         is op=0x0b & RD & RSsrc & imm16 & RDsrc & RDlosrc {
+    RD = RSsrc & imm16;
+    Z64 = (RDsrc == 0);
+    Z32 = (RDlosrc == 0);
+}
+
+:or  RD, RSsrc, imm16           is op=0x0c & RD & RSsrc & imm16 {
+    RD = RSsrc | imm16;
+}
 
 :xor RD, RSsrc, imm16           is op=0x0e & RD & RSsrc & imm16 {
     RD = RSsrc ^ imm16;
