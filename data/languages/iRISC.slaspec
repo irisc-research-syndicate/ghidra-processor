@@ -315,22 +315,21 @@ define pcodeop WRCSR;
     *[ram]:8 (RSlosrc+STOREOFF14) = RTsrc;
 }
 
-:jump.^jmpop REL24              is op=0x25 & jmpop & REL24 { goto REL24; }
-:call REL24                     is op=0x25 & jmpop=0x0 & REL24 { call REL24; }
-:jump REL24                     is op=0x25 & jmpop=0x1 & REL24 { goto REL24; }
+:jump.^jmpop REL24              is op=0x25 & jmpop & REL24 { goto REL24:4; }
+:call REL24                     is op=0x25 & jmpop=0x0 & REL24 { call REL24:4; }
+:jump REL24                     is op=0x25 & jmpop=0x1 & REL24 { goto REL24:4; }
 
-:b.t.^cc RSsrc, REL16           is op=0x28 & cc & RSsrc & REL16 { if(cc) goto REL16; }
-:b.f.^cc RSsrc, REL16           is op=0x29 & cc & RSsrc & REL16 { if(!cc) goto REL16; }
+:b.t.^cc RSsrc, REL16           is op=0x28 & cc & RSsrc & REL16 { if(cc) goto REL16:4; }
+:b.f.^cc RSsrc, REL16           is op=0x29 & cc & RSsrc & REL16 { if(!cc) goto REL16:4; }
 
-:b.bset cmpshamt, RSsrc, REL16  is op=0x2a & cmpshamt & RSsrc & REL16 { if(((RSsrc >> cmpshamt) & 1) == 1) goto REL16; }
-:b.bclr cmpshamt, RSsrc, REL16  is op=0x2b & cmpshamt & RSsrc & REL16 { if(((RSsrc >> cmpshamt) & 1) == 0) goto REL16; }
+:b.bset cmpshamt, RSsrc, REL16  is op=0x2a & cmpshamt & RSsrc & REL16 { if(((RSsrc >> cmpshamt:1) & 1) == 1) goto REL16:4; }
+:b.bclr cmpshamt, RSsrc, REL16  is op=0x2b & cmpshamt & RSsrc & REL16 { if(((RSsrc >> cmpshamt:1) & 1) == 0) goto REL16:4; }
 
-MASK: mask                      is mask { tmp:8 = (1 << mask) - 1; export tmp; }
-
+MASK: mask                      is mask { tmp:8 = (1 << mask:1) - 1; export tmp; }
 MASK: 0                         is mask=0x0 { export 0xffffffff:8; }
 
 :mask32 RD, RSsrc, shift, MASK  is op=0x32 & RD & RSsrc & shift & MASK {
-    RD = (RSsrc >> shift) & MASK;
+    RD = (RSsrc >> shift:1) & MASK;
 }
 
 :alu.^funct RD, RSsrc, RTsrc    is op=0x3f & funct & RD & RSsrc & RTsrc { RD = UnkAlu(funct:2, RSsrc:8, RTsrc:8); }
@@ -373,8 +372,8 @@ MASK: 0                         is mask=0x0 { export 0xffffffff:8; }
 :ret.d RD, RSsrc, RTsrc         is op=0x3f & funct=0x02d & RD & RSsrc & RTsrc { return [retaddr]; }
 
 :shl64.r RD, RSsrc, RTsrc       is op=0x3f & funct=0x080 & RD & RSsrc & RTsrc { RD = RSsrc << RTsrc; }
-:shl64.i RD, RSsrc, shamt       is op=0x3f & funct=0x081 & RD & RSsrc & shamt { RD = RSsrc << shamt; }
-:shr RDlo, RSlosrc, shamt       is op=0x3f & funct=0x083 & RDlo & RSlosrc & shamt { RDlo = RSlosrc >> shamt; }
-:shr.85 RDlo, RSlosrc, shamt    is op=0x3f & funct=0x085 & RDlo & RSlosrc & shamt { RDlo = RSlosrc >> shamt; }
-:shr.8a RD, RSsrc, shamt        is op=0x3f & funct=0x08a & RD & RSsrc & shamt { RD = RSsrc >> shamt; }
-:shr.8b RD, RSsrc, shamt        is op=0x3f & funct=0x08b & RD & RSsrc & shamt { RD = RSsrc >> shamt; }
+:shl64.i RD, RSsrc, shamt       is op=0x3f & funct=0x081 & RD & RSsrc & shamt { RD = RSsrc << shamt:1; }
+:shr RDlo, RSlosrc, shamt       is op=0x3f & funct=0x083 & RDlo & RSlosrc & shamt { RDlo = RSlosrc >> shamt:1; }
+:shr.85 RDlo, RSlosrc, shamt    is op=0x3f & funct=0x085 & RDlo & RSlosrc & shamt { RDlo = RSlosrc >> shamt:1; }
+:shr.8a RD, RSsrc, shamt        is op=0x3f & funct=0x08a & RD & RSsrc & shamt { RD = RSsrc >> shamt:1; }
+:shr.8b RD, RSsrc, shamt        is op=0x3f & funct=0x08b & RD & RSsrc & shamt { RD = RSsrc >> shamt:1; }
