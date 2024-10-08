@@ -139,9 +139,9 @@ RSlosrc: rslo is rslo & rslo=0 { export 0:4; }
 RTlosrc: rtlo is rtlo { export rtlo; }
 RTlosrc: rtlo is rtlo & rtlo=0 { export 0:4; }
 
-REL16: reloc is simm16 [ reloc=inst_start + 4*simm16; ] { export *:8 reloc; }
+REL16: reloc is simm16 [ reloc=inst_start + (4*simm16); ] { export *:8 reloc; }
 
-REL24: reloc is simm24 [ reloc=inst_start + 4*simm24; ] { export *:8 reloc; }
+REL24: reloc is simm24 [ reloc=inst_start + (4*simm24); ] { export *:8 reloc; }
 
 STOREOFF14: reloc is storeoff_hi & storeoff14_lo [ reloc = (storeoff_hi << 11) | (storeoff14_lo << 2); ] { export *[const]:4 reloc; }
 STOREOFF15: reloc is storeoff_hi & storeoff15_lo [ reloc = (storeoff_hi << 11) | (storeoff15_lo << 1); ] { export *[const]:4 reloc; }
