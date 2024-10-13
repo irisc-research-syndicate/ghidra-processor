@@ -136,6 +136,10 @@ RSlo: rslo is rslo { export rslo; }
 RSlosrc: rslo is rslo { export rslo; }
 RSlosrc: rslo is rslo & rslo=0 { export 0:4; }
 
+RShi: rshi is rshi { export rshi; }
+RShisrc: rshi is rshi { export rshi; }
+RShisrc: rshi is rshi & rshi=0 { export 0:4; }
+
 RTlosrc: rtlo is rtlo { export rtlo; }
 RTlosrc: rtlo is rtlo & rtlo=0 { export 0:4; }
 
