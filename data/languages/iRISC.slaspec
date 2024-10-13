@@ -259,8 +259,12 @@ define pcodeop WRCSR;
 
 :csr.w RD, RSsrc, CSRREG        is op=0x13 & RD & RSsrc & CSRREG { WRCSR(CSRREG:4, RSsrc:4); }
 
-:ld.17 RD, RSlosrc, RTlosrc, OFF9_SHL2 is op=0x17 & RD & RSlosrc & RTlosrc & OFF9_SHL2 {
-    RD = *[ram]:8 (RSlosrc + RTlosrc + (OFF9_SHL2 & 0xfffffff8));
+:ld.d.17 RD, RSlosrc, OFF14        is op=0x17 & RD & RSlosrc & OFF14 & is16bit=0 & is32bit=1 {
+    RD = zext(*[ram]:4 (RSlosrc + OFF14));
+}
+
+:ld.q.17 RD, RSlosrc, OFF14        is op=0x17 & RD & RSlosrc & OFF14 & is16bit=0 & is32bit=0 {
+    RD = *[ram]:8 (RSlosrc + (OFF14 & 0xfffffff8));
 }
 
 :ld.b RD, RSlosrc, simm16 is op=0x18 & RD & RSlosrc & simm16 {
