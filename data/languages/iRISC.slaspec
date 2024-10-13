@@ -178,12 +178,12 @@ cc: "ult64" is cmpop=0x14 { tmp1 = Z64 == 0 && C64 == 0; export tmp1; }
 cc: "neg64" is cmpop=0x1c { export V64; }
 cc: "pos64" is cmpop=0x1d { tmp1 = V64 == 0 && Z64 == 0; export tmp1; }
 
-define pcodeop unkOp;
+define pcodeop UnkOp;
 define pcodeop UnkCmp;
 define pcodeop UnkAlu;
 
 :unk.^op RD, RSsrc, RTsrc, imm16 is op & RD & RSsrc & RTsrc & imm16 {
-    RD = unkOp(op:1, RSsrc, RTsrc);
+    RD = UnkOp(op:1, RSsrc, RTsrc);
 }
 
 :addi RD, RSsrc, simm16         is op=0x00 & RD & RSsrc & simm16 {
