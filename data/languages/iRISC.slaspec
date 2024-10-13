@@ -319,8 +319,8 @@ define pcodeop WRCSR;
 }
 
 
-:st.q? RTsrc, RSlosrc, STOREOFF14 is op=0x1e & RDlosrc & RSlosrc & RTsrc & STOREOFF14 & is16bit=0 & is32bit=0 {
-    *[ram]:8 (RSlosrc+STOREOFF14) = RTsrc;
+:st.q.1e RTsrc, RSlosrc, STOREOFF14 is op=0x1e & RDlosrc & RSlosrc & RTsrc & STOREOFF14 & is16bit=0 & is32bit=0 {
+    *[ram]:8 (RSlosrc+(STOREOFF14 & 0xfffffff8)) = RTsrc;
 }
 
 :jump.^jmpop REL24              is op=0x25 & jmpop & REL24 { goto REL24:4; }
