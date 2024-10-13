@@ -323,15 +323,18 @@ define pcodeop WRCSR;
     *[ram]:8 (RSlosrc+(STOREOFF14 & 0xfffffff8)) = RTsrc;
 }
 
-:jump.^jmpop REL24              is op=0x25 & jmpop & REL24 { goto REL24:4; }
-:call REL24                     is op=0x25 & jmpop=0x0 & REL24 { call REL24:4; }
-:jump REL24                     is op=0x25 & jmpop=0x1 & REL24 { goto REL24:4; }
+:jump.^jmpop REL24              is op=0x25 & jmpop & REL24 { goto REL24; }
+:call REL24                     is op=0x25 & jmpop=0x0 & REL24 {
+    retaddr = inst_next;
+    call REL24;
+}
+:jump REL24                     is op=0x25 & jmpop=0x1 & REL24 { goto REL24; }
 
-:b.t.^cc RSsrc, REL16           is op=0x28 & cc & RSsrc & REL16 { if(cc) goto REL16:4; }
-:b.f.^cc RSsrc, REL16           is op=0x29 & cc & RSsrc & REL16 { if(!cc) goto REL16:4; }
+:b.t.^cc RSsrc, REL16           is op=0x28 & cc & RSsrc & REL16 { if(cc) goto REL16; }
+:b.f.^cc RSsrc, REL16           is op=0x29 & cc & RSsrc & REL16 { if(!cc) goto REL16; }
 
-:b.bset cmpshamt, RSsrc, REL16  is op=0x2a & cmpshamt & RSsrc & REL16 { if(((RSsrc >> cmpshamt:1) & 1) == 1) goto REL16:4; }
-:b.bclr cmpshamt, RSsrc, REL16  is op=0x2b & cmpshamt & RSsrc & REL16 { if(((RSsrc >> cmpshamt:1) & 1) == 0) goto REL16:4; }
+:b.bset cmpshamt, RSsrc, REL16  is op=0x2a & cmpshamt & RSsrc & REL16 { if(((RSsrc >> cmpshamt:1) & 1) == 1) goto REL16; }
+:b.bclr cmpshamt, RSsrc, REL16  is op=0x2b & cmpshamt & RSsrc & REL16 { if(((RSsrc >> cmpshamt:1) & 1) == 0) goto REL16; }
 
 MASK: mask                      is mask { tmp:8 = (1 << mask:1) - 1; export tmp; }
 MASK: 0                         is mask=0x0 { export 0xffffffff:8; }
