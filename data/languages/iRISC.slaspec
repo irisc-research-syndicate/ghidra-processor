@@ -386,5 +386,5 @@ MASK: 0                         is mask=0x0 { export 0xffffffff:8; }
 :shl64.i RD, RSsrc, shamt       is op=0x3f & funct=0x081 & RD & RSsrc & shamt { RD = RSsrc << shamt:1; }
 :shr RDlo, RSlosrc, shamt       is op=0x3f & funct=0x083 & RDlo & RSlosrc & shamt { RDlo = RSlosrc >> shamt:1; }
 :shr.85 RDlo, RSlosrc, shamt    is op=0x3f & funct=0x085 & RDlo & RSlosrc & shamt { RDlo = RSlosrc >> shamt:1; }
-:shr.8a RD, RSsrc, shamt        is op=0x3f & funct=0x08a & RD & RSsrc & shamt { RD = RSsrc >> shamt:1; }
-:shr.8b RD, RSsrc, shamt        is op=0x3f & funct=0x08b & RD & RSsrc & shamt { RD = RSsrc >> shamt:1; }
+:shr RDlo, RSlosrc, shamt       is op=0x3f & funct=0x08a & RDlo & RSlosrc & shamt { RDlo = RSlosrc >> shamt:1; }
+:shr RDlo, RShisrc, shamt       is op=0x3f & funct=0x08b & RDlo & RShisrc & shamt { RDlo = RShisrc >> shamt:1; }
