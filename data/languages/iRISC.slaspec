@@ -254,6 +254,7 @@ define pcodeop UnkAlu;
 define pcodeop RDCSR;
 define pcodeop WRCSR;
 
+:csr.r RDlo, RSsrc, "retaddr"     is op=0x12 & RDlo & RSsrc & imm16=0xbc { RDlo = retaddr; }
 :csr.r RD, RSsrc, CSRREG        is op=0x12 & RD & RSsrc & CSRREG { RD = RDCSR(CSRREG:4); }
 
 :csr.w RD, RSsrc, CSRREG        is op=0x13 & RD & RSsrc & CSRREG { WRCSR(CSRREG:4, RSsrc:4); }
