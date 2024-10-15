@@ -20,7 +20,7 @@ define register offset=0x00000 size=4 [
 ];
 
 define register offset=0x40000 size=4 [
-    csr0000 csr0001 debug_mask debug_level csr0004 csr0005 csr0006 csr0007
+    csr0000 csr0001 debug_mask debug_level cpuinfo csr0005 csr0006 csr0007
     trace_addr csr0009 csr000a csr000b trace_data csr000d csr000e csr000f
 ];
 
@@ -56,6 +56,7 @@ define register offset=0x81000 size=1 [
 
 define token instr(32)
     op=(26, 31)
+    csrrsub=(25, 25)
     rs=(21, 25)
     rshi=(21, 25)
     rslo=(21, 25)
@@ -67,6 +68,7 @@ define token instr(32)
     rdlo=(16, 20)
     cmpop=(16, 20)
     cmpshamt=(16, 20)
+    csrwfunct=(16, 20)
     rt=(11, 15)
     rthi=(11, 15)
     rtlo=(11, 15)
@@ -136,7 +138,6 @@ RSlo: rslo is rslo { export rslo; }
 RSlosrc: rslo is rslo { export rslo; }
 RSlosrc: rslo is rslo & rslo=0 { export 0:4; }
 
-RShi: rshi is rshi { export rshi; }
 RShisrc: rshi is rshi { export rshi; }
 RShisrc: rshi is rshi & rshi=0 { export 0:4; }
 
@@ -153,11 +154,7 @@ STOREOFF16: reloc is storeoff_hi & storeoff16_lo [ reloc = (storeoff_hi << 11) |
 OFF14: reloc is off14 [ reloc = off14 << 2; ] { export *[const]:4 reloc; }
 OFF15: reloc is off15 [ reloc = off15 << 1; ] { export *[const]:4 reloc; }
 
-OFF9_SHL2: reloc is off9 [ reloc=4*off9; ] { export *[const]:4 reloc; }
-
-OFF11: off11 is off11 { export *[const]:4 off11; }
-
-CSRREG: reloc is imm16 [ reloc=0x40000 + 4*imm16; ] { export *[register]:4 reloc; }
+CSRREG: reloc is imm11 [ reloc=0x40000 + 4*imm11; ] { export *[register]:4 reloc; }
 
 define pcodeop unkBrCond;
 
@@ -255,9 +252,17 @@ define pcodeop RDCSR;
 define pcodeop WRCSR;
 
 :csr.r RDlo, RSsrc, "retaddr"     is op=0x12 & RDlo & RSsrc & imm16=0xbc { RDlo = retaddr; }
-:csr.r RD, RSsrc, CSRREG        is op=0x12 & RD & RSsrc & CSRREG { RD = RDCSR(CSRREG:4); }
+:csr.r RD, CSRREG                       is op=0x12 & csrrsub=0 & RD & CSRREG { RD = RDCSR(CSRREG); }
+:ld.i RDlo, imm16                         is op=0x12 & csrrsub=1 & RDlo & imm16 { RDlo = *[ram]:4 (imm16:4 << 2); }
 
-:csr.w RD, RSsrc, CSRREG        is op=0x13 & RD & RSsrc & CSRREG { WRCSR(CSRREG:4, RSsrc:4); }
+:st.i RTlosrc, imm11                    is op=0x13 & csrwfunct=0x1b & RTlosrc & imm11 {
+    *[ram]:4 (imm11:4 << 2) = RTlosrc;
+}
+
+:csr.w.^csrwfunct RSsrc, RTsrc, imm11   is op=0x13 & RSsrc & RTsrc & csrwfunct & imm11 { WRCSR(csrwfunct:1, imm11:4, RSsrc:4, RTsrc:4); }
+:csr.w.00 RSsrc, CSRREG                 is op=0x13 & RSsrc & csrwfunct=0x00 & CSRREG { WRCSR(CSRREG, RSsrc:4); }
+:csr.w.0d RTsrc, imm11                  is op=0x13 & RTsrc & csrwfunct=0x0d & imm11 { WRCSR(0x0d:1, imm11:4, RTsrc:4); }
+:csr.w.11 RTsrc, imm11                  is op=0x13 & RTsrc & csrwfunct=0x11 & imm11 { WRCSR(0x11:1, imm11:4, RTsrc:4); }
 
 :ld.d.17 RD, RSlosrc, OFF14        is op=0x17 & RD & RSlosrc & OFF14 & is16bit=0 & is32bit=1 {
     RD = zext(*[ram]:4 (RSlosrc + OFF14));
@@ -270,7 +275,6 @@ define pcodeop WRCSR;
 :ld.b RD, RSlosrc, simm16 is op=0x18 & RD & RSlosrc & simm16 {
     RD = zext(*[ram]:1 (RSlosrc + simm16));
 }
-
 
 :ld.q RD, RSlosrc, OFF14        is op=0x19 & RD & RSlosrc & OFF14 & is16bit=0 & is32bit=0 {
     RD = *[ram]:8 (RSlosrc + OFF14);
@@ -317,7 +321,6 @@ define pcodeop WRCSR;
     *[ram]:2 (RSlosrc + STOREOFF15) = RTlosrc:2;
     RSlo = RSlosrc + STOREOFF15;
 }
-
 
 :st.q.1e RTsrc, RSlosrc, STOREOFF14 is op=0x1e & RDlosrc & RSlosrc & RTsrc & STOREOFF14 & is16bit=0 & is32bit=0 {
     *[ram]:8 (RSlosrc+(STOREOFF14 & 0xfffffff8)) = RTsrc;
