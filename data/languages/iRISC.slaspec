@@ -204,10 +204,11 @@ define pcodeop UnkAlu;
 }
 
 :subsi RD, RSsrc, simm16 is op=0x05 & RD & RDsrc & RDlosrc & RSsrc & RSlosrc & simm16 {
-    RD = RSsrc - simm16;
     C64 = RSsrc > simm16;
     C32 = RSlosrc > simm16;
-    RD = simm16 - RSsrc;
+
+    RD = RSsrc - simm16;
+
     N64 = (RDsrc s< 0);
     Z64 = (RDsrc == 0);
     N32 = (RDlosrc s< 0);
