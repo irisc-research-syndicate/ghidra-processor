@@ -252,9 +252,15 @@ define pcodeop UnkAlu;
 define pcodeop RDCSR;
 define pcodeop WRCSR;
 
-:csr.r RDlo, RSsrc, "retaddr"     is op=0x12 & RDlo & RSsrc & imm16=0xbc { RDlo = retaddr; }
-:csr.r RD, CSRREG                       is op=0x12 & csrrsub=0 & RD & CSRREG { RD = RDCSR(CSRREG); }
-:ld.i RDlo, imm16                         is op=0x12 & csrrsub=1 & RDlo & imm16 { RDlo = *[ram]:4 (imm16:4 << 2); }
+:csr.r RDlo, "retaddr"                  is op=0x12 & csrrsub=0 & RDlo & imm11=0xbc {
+    RDlo = retaddr;
+}
+:csr.r RD, CSRREG                       is op=0x12 & csrrsub=0 & RD & CSRREG {
+    RD = RDCSR(CSRREG);
+}
+:ld.i RDlo, imm16                       is op=0x12 & csrrsub=1 & RDlo & imm16 {
+    RDlo = *[ram]:4 (imm16:4 << 2);
+}
 
 :st.i RTlosrc, imm11                    is op=0x13 & csrwfunct=0x1b & RTlosrc & imm11 {
     *[ram]:4 (imm11:4 << 2) = RTlosrc;
